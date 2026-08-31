@@ -1,0 +1,13 @@
+# Production Checklist
+- [ ] No development secrets in production
+- [ ] HTTPS and HSTS enabled
+- [ ] Managed PostgreSQL with encrypted backups
+- [ ] Redis for sessions/rate limits/OTP
+- [ ] OTP implemented with hashed OTP values and expiry
+- [ ] HttpOnly Secure SameSite cookies
+- [ ] RBAC authorization middleware on all admin routes
+- [ ] Private object storage with signed URLs
+- [ ] Audit logs for sensitive changes
+- [ ] Monitoring, alerts and error tracking
+- [ ] Integration and end-to-end tests
+- [ ] Privacy, retention and deletion processes reviewed

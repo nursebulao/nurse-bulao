@@ -1,0 +1,8 @@
+{
+  "name":"@nurse-bulao/database",
+  "private":true,
+  "type":"module",
+  "exports":{"./client":"./client.ts"},
+  "scripts":{"generate":"prisma generate","migrate":"prisma migrate dev","studio":"prisma studio"},
+  "dependencies":{"@prisma/client":"^6.5.0","prisma":"^6.5.0"}
+}

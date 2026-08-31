@@ -1,0 +1,18 @@
+import Fastify from 'fastify';
+import helmet from '@fastify/helmet';
+import cookie from '@fastify/cookie';
+import rateLimit from '@fastify/rate-limit';
+import cors from '@fastify/cors';
+import { ZodError } from 'zod';
+import { bookingRoutes } from './modules/bookings/routes.js';
+import { nurseRoutes } from './modules/nurses/routes.js';
+import './lib/config.js';
+const app=Fastify({logger:true,bodyLimit:1024*1024,trustProxy:process.env.TRUST_PROXY==='true'});
+await app.register(helmet,{contentSecurityPolicy:{directives:{defaultSrc:["'self'"],baseUri:["'self'"],frameAncestors:["'none'"]}},hsts:process.env.NODE_ENV==='production'?{maxAge:15552000,includeSubDomains:true,preload:true}:false});
+await app.register(cookie);
+await app.register(rateLimit,{global:true,max:100,timeWindow:'1 minute'});
+await app.register(cors,{origin:false,credentials:false});
+app.setErrorHandler((err,_req,reply)=>{if(err instanceof ZodError)return reply.code(400).send({error:'Validation failed',details:err.flatten()}); if((err as any).code==='P2002') return reply.code(409).send({error:'A record with this value already exists'}); app.log.error(err); return reply.code(500).send({error:'Internal server error'});});
+app.get('/health',async()=>({ok:true,version:'4.1.0'}));
+await bookingRoutes(app); await nurseRoutes(app);
+const port=Number(process.env.PORT||3001); await app.listen({port,host:process.env.HOST||'0.0.0.0'});

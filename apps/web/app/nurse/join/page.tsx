@@ -1,0 +1,1 @@
+export default function Join(){return <main><h1>Join Nurse Bulao</h1><p>Nurse onboarding UI should collect identity, qualification, nursing registration, skills, availability and private document uploads.</p></main>}

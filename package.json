@@ -1,0 +1,17 @@
+{
+  "name":"nurse-bulao-v4",
+  "private":true,
+  "version":"4.1.0",
+  "workspaces":["apps/*","packages/*"],
+  "scripts":{
+    "dev:api":"npm --workspace @nurse-bulao/api run dev",
+    "dev:web":"npm --workspace @nurse-bulao/web run dev",
+    "build":"npm --workspace @nurse-bulao/database run generate && npm --workspace @nurse-bulao/api run build && npm --workspace @nurse-bulao/web run build",
+    "start:api":"npm --workspace @nurse-bulao/api start",
+    "start:web":"npm --workspace @nurse-bulao/web start",
+    "test":"npm --workspace @nurse-bulao/api test",
+    "db:generate":"npm --workspace @nurse-bulao/database run generate",
+    "db:migrate":"npm --workspace @nurse-bulao/database run migrate"
+  },
+  "engines":{"node":">=20"}
+}
