@@ -10,6 +10,221 @@ datasource db {
 enum UserRole {
   PATIENT
   NURSE
+  OPERATIONS_MANAGER
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum VerificationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ProfileStatus {
+  INCOMPLETE
+  PENDING_VERIFICATION
+  VERIFIED
+  SUSPENDED
+}
+
+enum BookingStatus {
+  REQUESTED
+  VERIFIED
+  MATCHING
+  NURSE_OFFERED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  OFFERED
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+  ON_DUTY
+}
+
+enum DocumentType {
+  IDENTITY
+  NURSING_REGISTRATION
+  CERTIFICATE
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OtpPurpose {
+  PATIENT_LOGIN
+  NURSE_LOGIN
+  PHONE_VERIFICATION
+}
+
+enum NotificationChannel {
+  SMS
+  WHATSAPP
+  EMAIL
+  PUSH
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+model User {
+  id                 String             @id @default(uuid())
+  phone              String             @unique
+  email              String?            @unique
+  role               UserRole
+  status             UserStatus         @default(ACTIVE)
+  phoneVerifiedAt    DateTime?
+  patient            Patient?
+  nurse              Nurse?
+  adminPasswordHash  String?
+  sessions           Session[]
+  auditLogs          AuditLog[]         @relation("ActorAuditLogs")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model Patient {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String
+  bookings  Booking[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Nurse {
+  id                 String             @id @default(uuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName           String
+  verificationStatus VerificationStatus @default(DRAFT)
+  profileStatus      ProfileStatus      @default(INCOMPLETE)
+  documents          NurseDocument[]
+  availabilities     NurseAvailability[]
+  assignments        BookingAssignment[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model NurseDocument {
+  id         String         @id @default(uuid())
+  nurseId    String
+  nurse      Nurse          @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  type       DocumentType
+  status     DocumentStatus @default(PENDING)
+  fileUrl    String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model Booking {
+  id            String              @id @default(uuid())
+  patientId     String
+  patient       Patient             @relation(fields: [patientId], references: [id])
+  fullName      String
+  status        BookingStatus       @default(REQUESTED)
+  assignments   BookingAssignment[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model BookingAssignment {
+  id        String           @id @default(uuid())
+  bookingId String
+  booking   Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  nurseId   String
+  nurse     Nurse            @relation(fields: [nurseId], references: [id])
+  status    AssignmentStatus @default(OFFERED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model NurseAvailability {
+  id        String             @id @default(uuid())
+  nurseId   String
+  nurse     Nurse              @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  status    AvailabilityStatus @default(AVAILABLE)
+  date      DateTime
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model OtpRequest {
+  id        String     @id @default(uuid())
+  phone     String
+  otpHash   String
+  purpose   OtpPurpose
+  expiresAt DateTime
+  used      Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  actor     User?    @relation("ActorAuditLogs", fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String              @id @default(uuid())
+  recipient String
+  channel   NotificationChannel
+  status    NotificationStatus  @default(QUEUED)
+  message   String
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PATIENT
+  NURSE
   SUPER_ADMIN
   OPERATOR
 }
