@@ -4,4 +4,4 @@
   publish = "apps/web/.next"
 
 [[plugins]]
-  package = "@netify/plugin-nextjs"
+  package = "@netlify/plugin-nextjs"
